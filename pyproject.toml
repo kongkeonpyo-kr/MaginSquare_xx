@@ -1,0 +1,27 @@
+[project]
+name = "magicsquare-xx"
+version = "0.1.0"
+description = "4x4 Magic Square — ECB + Dual-Track TDD"
+readme = "docs/PRD.md"
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "entity: Entity layer (Track 1 — domain state)",
+    "control: Control layer (Track 1 — rules & orchestration)",
+    "boundary: Boundary layer (Track 2 — I/O & presentation)",
+]
