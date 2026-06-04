@@ -1,0 +1,60 @@
+# MagicSquare_xx — Cursor Rules (초안)
+
+## 프로젝트
+4×4 부분 마방진 ECB + Dual-Track TDD. PRD: `docs/PRD.md`. Report/01·02는 기존 산출물로 간주.
+
+## 도메인 (불변)
+- 격자 4×4, 숫자 1~16 각 1회, **빈 칸 정확히 2개** (0개·1개·3개+ 금지).
+- 마방jin 상수 **34** — 행·열·대각선(10줄) 합 검증.
+- Solver 정상 출력: `int[6]` = `[r1, c1, n1, r2, c2, n2]` — **좌표 1-index** (1~4).
+- `MagicConstant` SSOT: `SIZE=4`, `MAGIC_SUM=34`, `MIN_VAL=1`, `MAX_VAL=16`. 코드·테스트에 `34`/`16` 리터럴 산재 금지.
+
+## 오류 코드 (Boundary 전담)
+| 코드 | 요약 |
+|------|------|
+| E001 | 1~16 범위 위반 |
+| E002 | 숫자 중복 |
+| E003 | 행/열 합 > MAGIC_SUM |
+| E004 | 빈 칸 개수 ≠ 2 |
+| E005 | 완성 후 10줄 합·숫자 집합 불일치 |
+| E006 | 입력/출력 형식 오류 |
+| E007 | 해 없음 |
+
+- **Boundary**: E001~E007 표시·반환.
+- **Entity**: E001~E005 **처리·매핑·raise 금지** (순수 상태만).
+- **Control**: 규칙 판정; Boundary가 쓸 결과 코드 전달.
+
+## ECB 의존
+```
+Boundary → Control → Entity
+```
+- Entity: I/O·오류코드·Boundary/Control import **금지**.
+- Control: Entity 조합·검증·Solver; Boundary import 금지.
+- Boundary: 입출력만; 도메인 규칙은 Control에 위임.
+
+## Dual-Track TDD
+| Track | Layer | Mock |
+|-------|-------|------|
+| Logic | entity, control | **Domain Mock 금지** — 실 Entity/Control 사용 |
+| UI | boundary | Mock **허용** (Control stub/fake OK) |
+
+- 테스트 ID: **D-*** (Logic), **U-*** (UI).
+- 파일명: `test_d_*.py`, `test_u_*.py` — `tests/entity|control|boundary/` 아래 배치.
+
+## TDD 규칙
+- **RED → GREEN → REFACTOR** 엄수.
+- assert 완화, `@pytest.mark.skip`, `xfail` **금지** (명시적 사용자 승인 없이).
+- 한 번에 한 테스트·한 레이어. GREEN 전 다음 RED 추가 금지.
+
+## AI 행동
+- **한국어**로 응답.
+- TDD 작업 시 매 턴 선언: `Phase`(RED/GREEN/REFACTOR) · `Layer`(entity/control/boundary) · `Track`(Logic/UI).
+- 범위 최소화: 요청·PRD·현재 Phase 외 코드 작성 금지.
+- **git commit/push는 사용자 요청 시에만** 수행.
+- 솔루션 먼저 제안 금지 — Mom Test 관점: 판정·재현·비용(재시작) 우선.
+
+## 금지 요약
+- Entity에 E001~E005 처리 로직
+- Logic Track Domain Mock
+- MAGIC_SUM/SIZE 리터럴 하드코딩
+- skip/xfail/느슨한 assert로 GREEN 우회
